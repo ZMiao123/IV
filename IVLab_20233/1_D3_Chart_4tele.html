@@ -1,0 +1,248 @@
+ 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Latest NEV Technology - Treemap</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <style>
+  /* General styling for the body and cells */
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .cell {
+    stroke: #2b4c58;
+    stroke-width: 1px;
+  }
+  .cell rect {
+    fill: #69b3a2;
+  }
+  .cell rect:hover {
+    fill: #4e8a77;
+  }
+  
+  /* Styling for the custom dialog (modal) */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  .modal-content {
+    background-color: #f4f4f4;
+    margin: 15% auto;
+    padding: 1%;
+    border: 0.1px solid #888;
+    width: 40%;
+  }
+  
+  .close {
+    color: #888;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close:hover {
+    color: #000;
+  }
+  
+  /* Style each card */
+  .card {
+    background-color: rgb(137, 19, 19);
+    padding: 2%;
+    margin: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    text-align: left;
+    font-size: 20px;
+  }
+  
+  /* Additional styling for specific cards */
+  #descriptionCard {
+    background-color: #32848f;
+  }
+  
+  #prosCard {
+    background-color: #aaffaa;
+  }
+  
+  #consCard {
+    background-color: #aaffdc;
+  }
+</style> 
+</head>
+<body>
+  <h2>Latest NEV Technology</h2>
+  <div id="treemap"></div>
+  <div id="customModal" class="modal">
+    <div class="modal-content">
+      <span id="closeButton" class="close">&times;
+        <div id="customModal">
+          <div id="descriptionCard" class="card"></div>
+          <div id="prosCard" class="card"></div>
+          <div id="consCard" class="card"></div>
+        </div>        
+      </span>
+      <p id="modalContent"></p>
+    </div>
+  <script>
+    // 数据
+    var data = {
+      name: "Latest NEV Technology",
+      children: [
+        { name: "Battery Technology", description: "Advancements in battery chemistry and energy density, leading to longer driving ranges and faster charging times for electric vehicles.",
+          advantages: [
+          "Modern battery technologies, such as lithium-ion batteries, offer higher energy density, enabling electric vehicles (EVs) to cover longer distances and charge more quickly.",
+          "Batteries can be recharged multiple times, making them more sustainable and cost-effective.",
+          "Battery-powered vehicles produce no tailpipe emissions, improving air quality."
+        ]
+        ,
+        limitations: [
+          "Charging is relatively slow compared to traditional refueling, which may inconvenience some users.",
+          "Batteries have a finite lifespan and need periodic replacement, potentially increasing overall costs.",
+          "Some battery types require rare metals, which can pose supply issues."
+        ]},
+        { name: "Charging Infrastructure", description: "The expansion and improvement of charging networks for EVs, including fast-charging stations and wireless charging technology."
+        ,
+        advantages: [
+          "Convenient Charging: The expansion of charging networks provides more charging stations, making EVs more user-friendly.",
+          "Fast Charging: Fast charging stations can recharge batteries quickly, enhancing travel flexibility."
+        ],
+        limitations: [
+          "High Infrastructure Investment: Building charging infrastructure requires significant investment.",
+          "Inconsistent Charging Standards: Different manufacturers use various types of charging plugs and standards, leading to inconvenience."
+        ]},
+        { name: "Electric Powertrains", description: "Innovations in electric motor and power electronics design for improved efficiency and performance." 
+        ,advantages: [
+          "High Efficiency: Electric powertrains offer efficient power delivery, reducing energy waste.",
+          "Quick Responsiveness: Electric vehicles provide instant torque, making driving more responsive."
+        ],
+        limitations: [
+          "Initial Cost: Electric powertrains are typically more expensive than internal combustion engine powertrains.",
+          "Dependence on Electric Infrastructure: Electric vehicles rely on a reliable power supply."
+        ]},
+        { name: "Autonomous Driving", description: "Integration of autonomous driving features and technologies into new energy vehicles for increased safety and convenience." 
+        ,
+        advantages: [
+          "Improved Safety: Autonomous driving technology can reduce traffic accidents and enhance driving safety.",
+          "Increased Convenience: Autonomous vehicles offer more free time and convenience."
+        ],
+        limitations: [
+          "Technology Maturity: Autonomous driving technology is still under development, with technical and regulatory challenges.",
+          "Privacy and Ethical Issues: Autonomous driving raises privacy and ethical concerns, such as data collection and responsibility for decisions."
+        ]},
+        { name: "Sustainability", description: "Sustainable materials, lightweight construction, and eco-friendly manufacturing processes to reduce the environmental impact of NEV production." 
+        ,
+        advantages: [
+          "Reduced Environmental Impact: Using sustainable materials and production processes reduces environmental impact.",
+          "Resource Conservation: Sustainability approaches help conserve natural resources."
+        ],
+        limitations: [
+          "High Cost: Some sustainability technologies may entail higher costs.",
+          "Material Supply: Relying on specific sustainable materials may face supply limitations."
+        ]},
+    ] 
+    };
+
+    // 创建treemap
+    var width = 400;
+    var height = 200;
+
+    var svg = d3.select("#treemap").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var treemap = d3.treemap()
+      .size([width, height])
+      .padding(2);
+
+    var root = d3.hierarchy(data)
+      .sum(function(d) { return d.children ? 0 : 1; });
+
+    treemap(root);
+
+    var cell = svg.selectAll("g")
+      .data(root.leaves())
+      .enter().append("g")
+      .attr("transform", function(d) { return "translate(" + d.x0 + "," + d.y0 + ")"; })
+      .attr("class", "cell");
+
+    cell.append("rect")
+      .attr("width", function(d) { return d.x1 - d.x0; })
+      .attr("height", function(d) { return d.y1 - d.y0; })
+      .attr("fill", function(d) { return color(d.parent.data.name); });
+
+    cell.append("text")
+      .attr("x", 3)
+      .attr("y", 15)
+      .text(function(d) { return d.data.name; });
+
+    cell.append("title")
+      .text(function(d) { return d.data.description; });
+    
+  cell.on("click", function(d) {
+    // 找到当前点击的元素
+    var clickedCell = d3.select(this);
+
+    // 更新当前元素的文本为Description并减小字体大小
+    clickedCell.select("text")
+        .text("Description: " + d.data.description)
+        .style("font-size", "12px"); // 设置新的字体大小
+
+    // 重置其他元素的文本为原始名称并恢复字体大小
+    cell.filter(function(otherCell) {
+        return otherCell !== d;
+    }).select("text").text(function(otherCell) {
+        return otherCell.data.name;
+    }).style("font-size", "15px"); // 设置原始字体大小
+   });
+
+   cell.on("click", function(d) {
+    var clickedCell = d3.select(this);
+    var description = d.data.description;
+    var pros = d.data.advantages;
+    var cons = d.data.limitations;
+
+    var descriptionCard = document.getElementById("descriptionCard");
+    var prosCard = document.getElementById("prosCard");
+    var consCard = document.getElementById("consCard");
+
+    // Update the card contents
+    descriptionCard.textContent = "Description: " + description;
+    prosCard.textContent = "Pros: " + pros;
+    consCard.textContent = "Cons: " + cons;
+
+    // Show the modal
+    var modal = document.getElementById("customModal");
+    modal.style.display = "block";
+
+
+      // 当用户点击对话框外部时，关闭对话框
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+
+      // 当用户点击"Close"按钮时，关闭对话框
+      var closeButton = document.getElementById("closeButton");
+      closeButton.onclick = function() {
+        modal.style.display = "none";
+      }
+
+    });
+
+  </script>
+</body>
+</html>
+ 

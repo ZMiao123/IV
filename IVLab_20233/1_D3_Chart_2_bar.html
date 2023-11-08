@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>D3.js Horizontal Bar Chart with Legend and Annotations</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <div id="horizontalBarChart"></div>
+    <script>
+      // 示例数据
+      var data = [
+        { time: 1996, "recharge mileage/km": 89, vehicle: "通用EV1", battery: "铅酸电池" },
+        { time: 1999, "recharge mileage/km": 169, vehicle: "通用EV1", battery: "镍氢电池" },
+        { time: 2008, "recharge mileage/km": 393, vehicle: "特斯拉Roadster", battery: "锂离子电池" },
+        { time: 2008.1, "recharge mileage/km": 400, vehicle: "比亚迪F3DM", battery: "锂离子电池" },
+        { time: 2017, "recharge mileage/km": 507, vehicle: "Model S P100D", battery: "锂离子电池" },
+        { time: 2022, "recharge mileage/km": 527, vehicle: "吉利ZEEKR 001", battery: "锂离子电池" },
+        { time: 2022.1, "recharge mileage/km": 837, vehicle: "Lucid Air Dream Edition", battery: "锂离子电池" },
+        { time: 2027, "recharge mileage/km": 1200, vehicle: "未知", battery: "固态电池" }
+      ];
+
+      var margin = { top: 30, right: 30, bottom: 40, left: 120 };
+      var width = 600 - margin.left - margin.right;
+      var height = 400 - margin.top - margin.bottom;
+
+      var svg = d3.select("#horizontalBarChart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var yScale = d3.scaleBand()
+        .domain(data.map(function(d) { return d.time; }))
+        .range([0, height])
+        .padding(0.1);
+
+      var xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, function(d) { return d["recharge mileage/km"]; })])
+        .nice()
+        .range([0, width]);
+
+      svg.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", function(d) { return yScale(d.time); })
+        .attr("width", function(d) { return xScale(d["recharge mileage/km"]); })
+        .attr("height", yScale.bandwidth())
+        .attr("fill", "steelblue");
+
+      svg.append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(yScale));
+
+      svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xScale));
+
+      svg.selectAll("text.label")
+        .data(data)
+        .enter()
+        .append("text")
+        .text(function(d) { return d["recharge mileage/km"]; })
+        .attr("x", function(d) { return xScale(d["recharge mileage/km"]) -27; })
+        .attr("y", function(d) { return yScale(d.time) + yScale.bandwidth() / 2; })
+        .attr("text-anchor", "start")
+        .attr("dy", "0.35em")
+        .attr("font-size", "12px")
+		.style("fill", "lightblue");
+ 
+      // 添加文字注释
+      svg.append("text")
+        .text("Recharge Mileage (km) over Time")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "16px")
+        .attr("font-weight", "bold");
+
+      // 添加每个条的文字说明
+
+		svg.selectAll("text.bar-label")
+			.data(data)
+			.enter()
+			.append("text")
+			.text(function(d) { return d.vehicle; })
+			.attr("x", function(d) { return xScale(d["recharge mileage/km"]) + 7; })
+			.attr("y", function(d) { return yScale(d.time) + yScale.bandwidth() / 2; })
+			.attr("text-anchor", "start")
+			.attr("dy", "0.35em")
+			.attr("font-size", "12px")
+			.style("fill", "black");
+
+		svg.selectAll("text.battery-type")
+			.data(data)
+			.enter()
+			.append("text")
+			.text(function(d) { return d["battery type"]; })
+			.attr("x", function(d) { return xScale(d["recharge mileage/km"]) + 10; })
+			.attr("y", function(d) { return yScale(d.time) + yScale.bandwidth() / 2-5; }) // 调整垂直位置
+			.attr("text-anchor", "start")
+			.attr("dy", "0.35em")
+			.attr("font-size", "12px")
+			.style("fill", "black");
+
+    </script>
+  </body>
+</html>
